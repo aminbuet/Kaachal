@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 
 import com.firebase.ui.auth.*;
 import com.firebase.ui.auth.BuildConfig;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -47,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String ANONYMOUS = "anonymous";
     public static final int DEFAULT_MSG_LENGTH_LIMIT = 1000;
-    public static final String FRIENDLY_MSG_LENGTH_LIMIT = "friendly_msg_length";
+    public static final String FRIENDLY_MSG_LENGTH_KEY = "friendly_msg_length";
 
     public static final  int RC_SIGN_IN = 1;
     private static final int RC_PHOTO_PICKER = 2;
@@ -192,8 +194,9 @@ public class MainActivity extends AppCompatActivity {
         //Define default config values. Defaults are used when fetched config values are not available.
         //e.g. if an error occured fetching values from the server.
         Map<String, Object> defaultConfigMap = new HashMap<>();
-        defaultConfigMap.put(FRIENDLY_MSG_LENGTH_LIMIT, DEFAULT_MSG_LENGTH_LIMIT);
+        defaultConfigMap.put(FRIENDLY_MSG_LENGTH_KEY, DEFAULT_MSG_LENGTH_LIMIT);
         mFirebaseRemoteConfig.setDefaults(defaultConfigMap);
+        fetchConfig();
     }
 
     // back to the device home screen page
@@ -314,5 +317,46 @@ public class MainActivity extends AppCompatActivity {
             mChildEventListener = null;
         }
 
+    }
+    
+    //Fetch the config to determine the allowed length of messages
+    public  void fetchConfig(){
+        long cacheExpiration = 3600; // 1 hour in seconds
+        //If developer mode is enabled reduce cacheExpiration to 0 so that each fetch goes to the 
+        //server. This shouldn't used to the release builds.
+        if(mFirebaseRemoteConfig.getInfo().getConfigSettings().isDeveloperModeEnabled()){
+            cacheExpiration = 0;
+        }
+        mFirebaseRemoteConfig.fetch(cacheExpiration)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        //Make the fetch config available
+                        //via FirebaseRemoteConfig get<type> calls, e.g. getlong, getString.
+                        mFirebaseRemoteConfig.activateFetched();
+                        
+                        //Update the EditText length limit with the newly retrived values from
+                        //Remote config.
+                        applyRetrivedLengthLimit();
+                }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        //An error occured when fetching the config.
+                        Log.w(TAG, "Error fetching config", e);
+                        applyRetrivedLengthLimit();
+                    }
+                });
+    }
+
+    /**
+     * Apply retrived length limit to edit text field. This result may be fresh from server or
+     * it may be from cached values.
+     */
+    private  void applyRetrivedLengthLimit(){
+        Long friendly_msg_length = mFirebaseRemoteConfig.getLong(FRIENDLY_MSG_LENGTH_KEY);
+        mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(friendly_msg_length.intValue())});
+        Log.d(TAG, FRIENDLY_MSG_LENGTH_KEY + "=" + friendly_msg_length);
     }
 }
