@@ -1,7 +1,7 @@
 package com.azan.firebase.android.kaachal;
 
 /**
- * Created by Raeeda-Azan on 2/10/17.
+ * Created by Md Aminur Rahman on 2/10/17.
  */
 
 import android.app.Activity;
@@ -28,7 +28,7 @@ public class MessageAdapter extends ArrayAdapter<FriendlyMessage> {
         }
 
         ImageView photoImageView = (ImageView) convertView.findViewById(R.id.photoImageView);
-        TextView messageTextView = (TextView) convertView.findViewById(R.id.messageTextView);
+    TextView messageTextView = (TextView) convertView.findViewById(R.id.messageTextView);
         TextView authorTextView = (TextView) convertView.findViewById(R.id.nameTextView);
 
         FriendlyMessage message = getItem(position);

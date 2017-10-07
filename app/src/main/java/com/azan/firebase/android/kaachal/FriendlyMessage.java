@@ -1,7 +1,7 @@
 package com.azan.firebase.android.kaachal;
 
 /**
- * Created by Raeeda-Azan on 2/10/17.
+ * Created by Md Aminur Rahman on 2/10/17.
  */
 public class FriendlyMessage {
 
