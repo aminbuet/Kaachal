@@ -1,5 +1,6 @@
 package com.azan.firebase.android.kaachal;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -137,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (user != null){
                     //user signed in
-                    Toast.makeText(MainActivity.this, "You are now signed in. Welcome to Kaachal.", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(MainActivity.this, "You are now signed in. Welcome to Kaachal.", Toast.LENGTH_SHORT).show();
                     onSignedInInitialize(user.getDisplayName());
                 }else {
                     //user signed out
@@ -156,6 +157,22 @@ public class MainActivity extends AppCompatActivity {
 
             }
         };
+    }
+
+    // back to the device home screen page
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_SIGN_IN){
+            if (resultCode == RESULT_OK){
+                // Sign-in succeeded, set up the UI
+                Toast.makeText(this, "Signed in!", Toast.LENGTH_SHORT).show();
+            } else if (resultCode == RESULT_CANCELED){
+                // Sign in was canceled by the user, finish the activity
+                Toast.makeText(this, "Sign in canceled", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
     }
 
     @Override
